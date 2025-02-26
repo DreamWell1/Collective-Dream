@@ -1,0 +1,53 @@
+# Core dependencies
+numpy>=1.20.0
+scipy>=1.7.0
+scikit-learn>=1.0.0
+pandas>=1.3.0
+matplotlib>=3.4.0
+
+# AI/ML
+requests>=2.26.0
+anthropic>=0.5.0
+openai>=0.27.0
+tensorboard>=2.8.0
+pytorch>=1.10.0; platform_system != "Darwin" or platform_machine != "arm64"
+pytorch-cpu>=1.10.0; platform_system == "Darwin" and platform_machine == "arm64" 
+
+# Audio processing
+pydub>=0.25.1
+librosa>=0.8.1
+soundfile>=0.10.3
+
+# Video processing
+moviepy>=1.0.3
+opencv-python>=4.5.3
+pillow>=8.3.1
+
+# Text processing
+nltk>=3.6.3
+spacy>=3.1.3
+transformers>=4.11.3
+
+# Utilities
+tqdm>=4.62.3
+python-dotenv>=0.19.1
+pyyaml>=6.0
+click>=8.0.3
+colorlog>=6.6.0
+
+# Database
+sqlalchemy>=1.4.26
+sqlite3>=2.6.0; platform_system != "Windows"
+pysqlite3>=0.4.6; platform_system == "Windows"
+
+# Testing
+pytest>=6.2.5
+pytest-cov>=2.12.1
+
+# Web (optional)
+flask>=2.0.2
+fastapi>=0.70.0
+uvicorn>=0.15.0
+
+# Volcengine SDK
+volcengine-ark-sdk>=1.0.0 

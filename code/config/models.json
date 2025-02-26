@@ -1,0 +1,77 @@
+{
+    "default_model": "deepseek",
+    "models": {
+        "deepseek": {
+            "name": "DeepSeek",
+            "provider": "deepseek",
+            "api_endpoint": "https://api.deepseek.com/v1/chat/completions",
+            "model": "deepseek-chat",
+            "max_tokens": 4096,
+            "temperature": 0.7,
+            "description": "DeepSeek AI language model"
+        },
+        "doubao": {
+            "name": "DouBao",
+            "provider": "bytedance",
+            "api_endpoint": "https://open.volcengineapi.com",
+            "model": "doubao",
+            "max_tokens": 4096,
+            "temperature": 0.7,
+            "description": "ByteDance's DouBao AI with text and speech capabilities"
+        },
+        "ernie": {
+            "name": "ERNIE-Bot 4.0",
+            "provider": "baidu",
+            "api_endpoint": "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro",
+            "max_tokens": 4096,
+            "temperature": 0.7,
+            "description": "Baidu's advanced language model for Chinese content generation"
+        },
+        "qianwen": {
+            "name": "Tongyi Qianwen",
+            "provider": "alibaba",
+            "api_endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
+            "max_tokens": 4000,
+            "temperature": 0.7,
+            "description": "Alibaba's flagship language model with strong Chinese capability"
+        },
+        "chatglm": {
+            "name": "ChatGLM-4",
+            "provider": "zhipu",
+            "api_endpoint": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+            "max_tokens": 8192,
+            "temperature": 0.8,
+            "description": "Zhipu AI's bilingual model optimized for Chinese content"
+        },
+        "minimax": {
+            "name": "abab6.5-chat",
+            "provider": "minimax",
+            "api_endpoint": "https://api.minimax.chat/v1/text/chatcompletion_pro",
+            "max_tokens": 16384,
+            "temperature": 0.8,
+            "description": "MiniMax's large language model for versatile content generation"
+        }
+    },
+    "speech_synthesis": {
+        "provider": "doubao",
+        "doubao": {
+            "api_endpoint": "https://open.volcengineapi.com/tts",
+            "default_voice": "zh_female_1",
+            "format": "mp3"
+        }
+    },
+    "max_text_length": 8000,
+    "retry_attempts": 3,
+    "retry_delay_seconds": 5,
+    "safety_filter": true,
+    "prompt_templates": {
+        "video_content": {
+            "chinese": "创建有关{topic}的引人入胜的内容，这些内容具有视觉描述性，适合视频使用。重点关注{focus_area}并包含有关{subtopic}的事实。",
+            "english": "Create engaging content about {topic} that is visually descriptive and suitable for a video. Focus on {focus_area} and include facts about {subtopic}."
+        },
+        "hypnotic_content": {
+            "chinese": "生成一个关于{topic}的催眠脚本，能够引起平静和专注的感觉。包括与{focus_area}相关的重复短语和生动的图像。",
+            "english": "Generate a hypnotic script about {topic} that induces a sense of calm and focus. Include repetitive phrases and vivid imagery related to {focus_area}."
+        }
+    }
+} 

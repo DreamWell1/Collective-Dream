@@ -1,0 +1,37 @@
+import os
+from dotenv import load_dotenv
+
+# Get the directory of the current script
+base_dir = os.path.dirname(os.path.abspath(__file__))
+# Load .env file from the project root
+dotenv_path = os.path.join(base_dir, '.env')
+load_dotenv(dotenv_path)
+
+# Verify it's loaded
+print(f"API Key loaded: {'Yes' if os.getenv('DEEPSEEK_API_KEY') else 'No'}")
+
+        This is a mock response from DeepSeek API for development mode.
+        
+        Your prompt was: "
+    Based on the following topic, generate a comprehensive and engaging text 
+    of approximately 8000 characters. The content should be 
+    well-structured, informative, and suitable for narration in a video:
+    
+    i want to be a witch.
+    
+    The text should include:
+    - A compelling introduction
+    - Detailed exploration of the topic
+    - Interesting facts or insights
+    - A meaningful conclusion
+    
+    Please ensure the content is factually accurate and engaging.
+    "
+        
+        In a real deployment with a valid API key, this would connect to the 
+        DeepSeek API and return an actual generated response. For now, this
+        placeholder text is shown instead.
+        
+        To use the actual DeepSeek API, please set the DEEPSEEK_API_KEY
+        environment variable with your API key.
+        

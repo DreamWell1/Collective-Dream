@@ -1,0 +1,74 @@
+[
+    {
+        "id": "nature",
+        "name": "Nature",
+        "video_path": "nature",
+        "keywords": ["forest", "ocean", "mountains", "wildlife", "trees", "water", "sky", "clouds", "plants", "animals"],
+        "description": "Peaceful natural environments and wildlife scenes",
+        "recommended_effects": ["subtle", "smooth"]
+    },
+    {
+        "id": "space",
+        "name": "Space",
+        "video_path": "space",
+        "keywords": ["stars", "galaxy", "cosmos", "planets", "universe", "nebula", "astronomy", "cosmic", "orbit"],
+        "description": "Mesmerizing space and cosmic imagery",
+        "recommended_effects": ["kaleidoscope", "pulse"]
+    },
+    {
+        "id": "abstract",
+        "name": "Abstract",
+        "video_path": "abstract",
+        "keywords": ["patterns", "shapes", "colors", "geometric", "flowing", "fractal", "digital", "artistic"],
+        "description": "Abstract patterns and visually stimulating graphics",
+        "recommended_effects": ["kaleidoscope", "swirl", "pulse"]
+    },
+    {
+        "id": "meditation",
+        "name": "Meditation",
+        "video_path": "meditation",
+        "keywords": ["zen", "calm", "peaceful", "mindfulness", "relaxation", "spiritual", "balance", "harmony"],
+        "description": "Calming scenes for meditation and mindfulness",
+        "recommended_effects": ["subtle", "smooth"]
+    },
+    {
+        "id": "kaleidoscope",
+        "name": "Kaleidoscope",
+        "video_path": "kaleidoscope",
+        "keywords": ["symmetry", "mirrors", "patterns", "colorful", "geometric", "psychedelic", "transforming"],
+        "description": "Hypnotic kaleidoscopic patterns and transformations",
+        "recommended_effects": ["kaleidoscope", "swirl"]
+    },
+    {
+        "id": "water",
+        "name": "Water",
+        "video_path": "water",
+        "keywords": ["ocean", "waves", "river", "flow", "ripples", "underwater", "rain", "waterfall"],
+        "description": "Flowing water in various forms and environments",
+        "recommended_effects": ["pulse", "smooth"]
+    },
+    {
+        "id": "fire",
+        "name": "Fire",
+        "video_path": "fire",
+        "keywords": ["flame", "burn", "campfire", "fireplace", "candle", "light", "warm", "glow"],
+        "description": "Mesmerizing fire and flame patterns",
+        "recommended_effects": ["pulse", "subtle"]
+    },
+    {
+        "id": "light",
+        "name": "Light",
+        "video_path": "light",
+        "keywords": ["glow", "shimmer", "shine", "sparkle", "luminous", "rays", "beam", "laser", "neon"],
+        "description": "Captivating light patterns and effects",
+        "recommended_effects": ["pulse", "kaleidoscope"]
+    },
+    {
+        "id": "psychedelic",
+        "name": "Psychedelic",
+        "video_path": "psychedelic",
+        "keywords": ["trippy", "colorful", "morphing", "vibrant", "surreal", "hypnotic", "mind-bending"],
+        "description": "Vibrant psychedelic visuals and transformations",
+        "recommended_effects": ["swirl", "kaleidoscope", "pulse"]
+    }
+] 

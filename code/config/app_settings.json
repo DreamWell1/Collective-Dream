@@ -1,0 +1,91 @@
+{
+    "app_name": "Content Generation System",
+    "version": "1.0.0",
+    "environment": "development",
+    "logging": {
+        "log_level": "INFO",
+        "log_to_file": true,
+        "log_dir": "logs",
+        "log_rotation": true,
+        "log_max_size_mb": 10,
+        "log_backup_count": 5
+    },
+    "paths": {
+        "output_dir": "data/output",
+        "video_library": "data/video_library",
+        "user_prompts": "data/user_prompts",
+        "temp_dir": "data/temp"
+    },
+    "video": {
+        "default_resolution": [1920, 1080],
+        "default_framerate": 30,
+        "default_format": "mp4",
+        "min_video_duration": 5,
+        "max_video_duration": 60,
+        "similarity_threshold": 0.3,
+        "max_videos_per_output": 10,
+        "transition_duration": 1.0,
+        "hypnotic_effects": ["kaleidoscope", "pulse", "swirl"]
+    },
+    "audio": {
+        "speech_synthesis": {
+            "provider": "elevenlabs",
+            "elevenlabs": {
+                "api_endpoint": "https://api.elevenlabs.io/v1/text-to-speech",
+                "default_voice": "Thomas",
+                "model": "eleven_monolingual_v1",
+                "optimize_streaming_latency": 0
+            },
+            "azure": {
+                "api_endpoint": "https://YOUR_REGION.tts.speech.microsoft.com/cognitiveservices/v1",
+                "default_voice": "en-US-JennyNeural",
+                "output_format": "audio-24khz-96kbitrate-mono-mp3"
+            },
+            "google": {
+                "api_endpoint": "https://texttospeech.googleapis.com/v1/text:synthesize",
+                "default_voice": "en-US-Neural2-F",
+                "speaking_rate": 1.0,
+                "pitch": 0.0
+            }
+        },
+        "background_music": {
+            "enabled": true,
+            "volume": 0.2,
+            "fade_in": 1.0,
+            "fade_out": 2.0,
+            "categories": {
+                "meditation": "data/audio/background/meditation.mp3",
+                "space": "data/audio/background/space_ambient.mp3",
+                "abstract": "data/audio/background/electronic.mp3",
+                "nature": "data/audio/background/nature_sounds.mp3",
+                "default": "data/audio/background/default.mp3"
+            }
+        }
+    },
+    "subtitles": {
+        "enabled": true,
+        "font": "Arial",
+        "font_size": 24,
+        "color": "#FFFFFF",
+        "background": "#80000000",
+        "outline": "#000000",
+        "position": "bottom",
+        "max_chars_per_line": 50,
+        "words_per_line": 10
+    },
+    "watermark": {
+        "enabled": true,
+        "text": "Generated Content",
+        "position": "bottom-right",
+        "opacity": 0.5
+    },
+    "database": {
+        "type": "sqlite",
+        "path": "data/content_generation.db"
+    },
+    "processing": {
+        "multithreading": true,
+        "max_workers": 4,
+        "timeout_seconds": 300
+    }
+} 
