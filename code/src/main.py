@@ -32,8 +32,15 @@ logger = setup_logger(__name__)
 
 def load_config(config_path):
     """Load configuration from JSON file."""
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    # Adjust path to look in code/config instead of just config
+    actual_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', os.path.basename(config_path))
+    try:
+        with open(actual_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # Fallback to the original path in case the file structure changes
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
 
 def main():
     """Main workflow function."""
@@ -67,6 +74,7 @@ def main():
         text_content = generate_text(ai_model, processed_prompt, 
                                       max_length=models_config['max_text_length'])
         
+        print(text_content)
         # Generate speech from text
         audio_file = generate_speech(text_content)
         

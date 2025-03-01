@@ -50,6 +50,80 @@
             "max_tokens": 16384,
             "temperature": 0.8,
             "description": "MiniMax's large language model for versatile content generation"
+        },
+        "gemini": {
+            "name": "gemini",
+            "display_name": "Google Gemini",
+            "api_key_env": "GEMINI_API_KEY",
+            "api_base": "https://generativelanguage.googleapis.com/v1beta/models",
+            "default_model": "gemini-2.0-flash",
+            "available_models": {
+                "gemini-2.0-flash": {
+                    "display_name": "Gemini 2.0 Flash",
+                    "max_tokens": 4096,
+                    "supports_streaming": true,
+                    "description": "Google's fastest model for efficient generation"
+                },
+                "gemini-pro": {
+                    "display_name": "Gemini Pro",
+                    "max_tokens": 8192,
+                    "supports_streaming": true,
+                    "description": "Google's balanced model for most tasks"
+                },
+                "gemini-pro-vision": {
+                    "display_name": "Gemini Pro Vision",
+                    "max_tokens": 4096,
+                    "supports_images": true,
+                    "description": "Supports image input with text"
+                },
+                "gemini-2.0-pro": {
+                    "display_name": "Gemini 2.0 Pro",
+                    "max_tokens": 16384,
+                    "supports_streaming": true,
+                    "description": "Advanced reasoning and generation"
+                }
+            },
+            "enabled": true
+        },
+        "doubao": {
+            "name": "doubao",
+            "display_name": "Doubao LLama",
+            "api_key_env": "DOUBAO_API_KEY",
+            "api_base": "https://api.doubao.com/chat/completions",
+            "default_model": "doubao-llama3-8b",
+            "available_models": {
+                "doubao-llama3-8b": {
+                    "display_name": "LLama 3 8B",
+                    "max_tokens": 4096,
+                    "supports_streaming": true
+                },
+                "doubao-qwen-7b": {
+                    "display_name": "Qwen 7B",
+                    "max_tokens": 2048,
+                    "supports_streaming": true
+                }
+            },
+            "enabled": true
+        },
+        "deepseek": {
+            "name": "deepseek",
+            "display_name": "DeepSeek AI",
+            "api_key_env": "DEEPSEEK_API_KEY",
+            "api_base": "https://api.deepseek.com/v1/chat/completions",
+            "default_model": "deepseek-chat",
+            "available_models": {
+                "deepseek-chat": {
+                    "display_name": "DeepSeek Chat",
+                    "max_tokens": 8192,
+                    "supports_streaming": true
+                },
+                "deepseek-coder": {
+                    "display_name": "DeepSeek Coder",
+                    "max_tokens": 8192,
+                    "supports_streaming": true
+                }
+            },
+            "enabled": true
         }
     },
     "speech_synthesis": {
@@ -73,5 +147,19 @@
             "chinese": "生成一个关于{topic}的催眠脚本，能够引起平静和专注的感觉。包括与{focus_area}相关的重复短语和生动的图像。",
             "english": "Generate a hypnotic script about {topic} that induces a sense of calm and focus. Include repetitive phrases and vivid imagery related to {focus_area}."
         }
+    },
+    "default_provider": "gemini",
+    "model_aliases": {
+        "gemini": ["gemini", "gemini-pro", "gemini-1.0-pro", "gemini-2.0-flash", "gemini-2.0-pro", "gemini-pro-vision"],
+        "doubao": ["doubao", "doubao-llama3", "llama3"],
+        "deepseek": ["deepseek", "deepseek-coder", "deepseek-chat"],
+        "openai": ["openai", "gpt", "gpt-3.5", "gpt-4", "chatgpt"]
+    },
+    "model_connectors": {
+        "gemini": "gemini_connector",
+        "doubao": "doubao_connector",
+        "deepseek": "deepseek_connector",
+        "openai": "openai_connector",
+        "default": "gemini_connector"
     }
 } 

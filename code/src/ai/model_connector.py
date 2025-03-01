@@ -9,6 +9,7 @@ import os
 import json
 import logging
 from importlib import import_module
+from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -134,4 +135,82 @@ def get_ai_model(model_name=None):
     Returns:
         object: Model connector instance
     """
-    return _factory.get_connector(model_name) 
+    return _factory.get_connector(model_name)
+
+# Available model connectors and their mappings
+MODEL_CONNECTORS = {
+    "gemini": "gemini_connector",
+    "doubao": "doubao_connector",
+    "openai": "openai_connector",
+    "deepseek": "deepseek_connector",
+    "default": "gemini_connector"  # Set Gemini as the default
+}
+
+# Model name aliases
+MODEL_ALIASES = {
+    "gemini": ["gemini", "gemini-pro", "gemini-1.0-pro", "gemini-2.0-flash"],
+    "deepseek": ["deepseek", "deepseek-coder", "deepseek-chat"],
+    "doubao": ["doubao", "doubao-llama3", "llama3"],
+    "openai": ["openai", "gpt", "gpt-3.5", "gpt-4", "chatgpt"]
+}
+
+def get_connector_for_model(model_name: str) -> Any:
+    """
+    Get the appropriate connector for the specified model.
+    
+    Args:
+        model_name: Name of the model to use
+        
+    Returns:
+        Connector module for the requested model
+    """
+    model_type = model_name.lower().split('-')[0] if '-' in model_name else model_name.lower()
+    
+    # Check if model_name matches any alias
+    connector_name = None
+    for connector, aliases in MODEL_ALIASES.items():
+        if model_type in aliases or model_name.lower() in aliases:
+            connector_name = connector
+            break
+    
+    # If no match found, use default
+    if not connector_name:
+        logger.warning(f"Unknown model: {model_name}, using {MODEL_CONNECTORS['default']}")
+        connector_name = MODEL_CONNECTORS['default']
+    
+    # Import the appropriate connector module
+    module_name = MODEL_CONNECTORS.get(connector_name, MODEL_CONNECTORS['default'])
+    try:
+        # First try to import from model_connectors package
+        return importlib.import_module(f"src.ai.model_connectors.{module_name}")
+    except ImportError:
+        try:
+            # Then try to import directly
+            return importlib.import_module(f"src.ai.{module_name}")
+        except ImportError:
+            logger.error(f"Could not import connector module for {connector_name}")
+            # Fall back to the gemini connector that we've created
+            from src.ai import text_generator_gemini
+            return text_generator_gemini
+
+def generate_text(model_name: str, prompt: str, **kwargs) -> str:
+    """
+    Generate text using the specified model.
+    
+    Args:
+        model_name: Name of the model to use
+        prompt: Text prompt to generate from
+        **kwargs: Additional arguments to pass to the model
+        
+    Returns:
+        Generated text
+    """
+    connector = get_connector_for_model(model_name)
+    logger.info(f"Using connector: {connector.__name__} for model: {model_name}")
+    
+    # Use the connector's generate_text function
+    if hasattr(connector, "generate_text"):
+        return connector.generate_text(model_name, prompt, **kwargs)
+    else:
+        logger.error(f"Connector {connector.__name__} does not have generate_text method")
+        return f"Error: Model connector {connector.__name__} does not support text generation" 

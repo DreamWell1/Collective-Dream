@@ -2,200 +2,208 @@
 # -*- coding: utf-8 -*-
 
 """
-Generates speech from text using speech synthesis API.
+Speech synthesis module with multiple fallbacks.
 """
 
 import os
+import sys
 import logging
-import json
-import requests
 import tempfile
+from pathlib import Path
+import subprocess
+import wave
+import array
+import math
+import random
 
+# Configure logging
 logger = logging.getLogger(__name__)
 
-def load_speech_config():
+def generate_speech(text, output_path=None, language="en", slow=False):
     """
-    Load speech synthesis configuration.
-    
-    Returns:
-        dict: Speech synthesis configuration
-    """
-    try:
-        with open('config/app_settings.json', 'r', encoding='utf-8') as f:
-            config = json.load(f)
-        return config.get('speech_synthesis', {})
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        logger.error(f"Error loading speech synthesis config: {e}")
-        return {}
-
-def generate_speech(text, output_dir=None, voice_id=None):
-    """
-    Generate speech from text using the configured speech synthesis API.
+    Generate speech from text with multiple fallback options.
     
     Args:
-        text (str): Text to convert to speech
-        output_dir (str, optional): Directory to save audio file
-        voice_id (str, optional): ID of voice to use for synthesis
-    
+        text: Text to convert to speech
+        output_path: Path to save the audio file (if None, a temp file is created)
+        language: Language code (default: "en")
+        slow: Whether to generate slower speech
+        
     Returns:
-        str: Path to generated audio file
+        Path to the generated audio file
     """
-    if not output_dir:
-        output_dir = os.path.join('data', 'output', 'audio')
+    # Create temp file if no output path provided
+    if output_path is None:
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
+            output_path = temp_file.name
     
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, f"speech_{os.getpid()}.mp3")
+    success = False
     
-    # Load configuration
-    config = load_speech_config()
-    api_url = config.get('api_url')
-    api_key = config.get('api_key') or os.environ.get('SPEECH_API_KEY')
-    
-    if not api_url or not api_key:
-        logger.error("Missing speech synthesis API configuration")
-        return _generate_dummy_audio(output_path)
-    
-    # Use provided voice ID or default from config
-    voice_id = voice_id or config.get('default_voice_id', 'en_male_1')
-    
-    # Prepare chunks for processing (to handle API limits)
-    chunks = _prepare_text_chunks(text, max_chars=3000)
-    
-    temp_files = []
+    # Try using gtts
     try:
-        # Process each chunk
-        for i, chunk in enumerate(chunks):
-            chunk_file = os.path.join(tempfile.gettempdir(), f"speech_chunk_{i}_{os.getpid()}.mp3")
-            
-            # Call TTS API
-            response = requests.post(
-                api_url,
-                headers={"Authorization": f"Bearer {api_key}"},
-                json={
-                    "text": chunk,
-                    "voice_id": voice_id,
-                    "output_format": "mp3",
-                    "speed": 1.0,
-                    "pitch": 1.0
-                }
-            )
-            
-            if response.status_code == 200:
-                # Save audio chunk
-                with open(chunk_file, 'wb') as f:
-                    f.write(response.content)
-                temp_files.append(chunk_file)
-            else:
-                logger.error(f"API error: {response.status_code} - {response.text}")
-        
-        # Combine chunks if multiple
-        if len(temp_files) > 1:
-            _combine_audio_files(temp_files, output_path)
-        elif temp_files:
-            # Copy single file to output path
-            with open(temp_files[0], 'rb') as src, open(output_path, 'wb') as dst:
-                dst.write(src.read())
-        else:
-            return _generate_dummy_audio(output_path)
-        
-        logger.info(f"Generated speech audio saved to {output_path}")
-        return output_path
-        
+        import gtts
+        logger.info("Trying Google TTS...")
+        tts = gtts.gTTS(text=text, lang=language, slow=slow)
+        tts.save(output_path)
+        logger.info(f"Successfully generated speech with Google TTS: {output_path}")
+        success = True
+    except ImportError:
+        logger.warning("gtts not installed. Install with: pip install gtts")
+        success = False
     except Exception as e:
-        logger.error(f"Error generating speech: {e}")
-        return _generate_dummy_audio(output_path)
-    finally:
-        # Clean up temp files
-        for file in temp_files:
+        logger.warning(f"Google TTS failed: {str(e)}")
+        success = False
+    
+    # If gtts failed, try pyttsx3
+    if not success:
+        try:
+            import pyttsx3
+            logger.info("Trying pyttsx3...")
+            
+            # Create a WAV file first
+            wav_path = output_path.replace(".mp3", ".wav")
+            
+            engine = pyttsx3.init()
+            engine.save_to_file(text, wav_path)
+            engine.runAndWait()
+            
+            # Convert WAV to MP3 if possible
             try:
-                if os.path.exists(file):
-                    os.remove(file)
-            except:
-                pass
-
-def _prepare_text_chunks(text, max_chars=3000):
-    """
-    Split text into chunks for processing.
+                from pydub import AudioSegment
+                AudioSegment.from_wav(wav_path).export(output_path, format="mp3")
+                os.remove(wav_path)  # Clean up WAV file
+            except ImportError:
+                # If pydub isn't available, just use the WAV file
+                output_path = wav_path
+            
+            logger.info(f"Successfully generated speech with pyttsx3: {output_path}")
+            success = True
+        except ImportError:
+            logger.warning("pyttsx3 not installed. Install with: pip install pyttsx3")
+            success = False
+        except Exception as e:
+            logger.warning(f"pyttsx3 TTS failed: {str(e)}")
+            success = False
     
-    Args:
-        text (str): Text to split
-        max_chars (int): Maximum characters per chunk
+    # If both failed, create a simple beep sound as last resort
+    if not success:
+        logger.warning("All TTS methods failed. Creating emergency beep sound.")
+        output_path = create_beep_sound(output_path, text)
+        success = True if output_path else False
     
-    Returns:
-        list: List of text chunks
-    """
-    chunks = []
-    sentences = text.replace('\n', ' ').split('. ')
-    
-    current_chunk = ""
-    for sentence in sentences:
-        # Add period back to sentence
-        if not sentence.endswith('.'):
-            sentence += '.'
-        
-        # Check if adding this sentence would exceed the limit
-        if len(current_chunk) + len(sentence) + 1 > max_chars:
-            chunks.append(current_chunk)
-            current_chunk = sentence
-        else:
-            current_chunk += ' ' + sentence if current_chunk else sentence
-    
-    # Add the last chunk if not empty
-    if current_chunk:
-        chunks.append(current_chunk)
-    
-    return chunks
-
-def _combine_audio_files(input_files, output_file):
-    """
-    Combine multiple audio files into one.
-    
-    Args:
-        input_files (list): List of input audio file paths
-        output_file (str): Output audio file path
-    """
-    try:
-        # Use FFmpeg to concatenate files
-        input_args = '|'.join(input_files)
-        ffmpeg_cmd = [
-            'ffmpeg', '-y', '-i', 
-            f"concat:{input_args}", 
-            '-acodec', 'copy', 
-            output_file
-        ]
-        
-        subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except Exception as e:
-        logger.error(f"Error combining audio files: {e}")
-        # If combining fails, copy the first file as output
-        if input_files:
-            with open(input_files[0], 'rb') as src, open(output_file, 'wb') as dst:
-                dst.write(src.read())
-
-def _generate_dummy_audio(output_path):
-    """
-    Generate a silent audio file as fallback.
-    
-    Args:
-        output_path (str): Path to save dummy audio
-    
-    Returns:
-        str: Path to generated audio file
-    """
-    try:
-        # Create 10 seconds of silence
-        subprocess.run([
-            'ffmpeg', '-y', '-f', 'lavfi', 
-            '-i', 'anullsrc=r=44100:cl=stereo', 
-            '-t', '10', 
-            output_path
-        ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        logger.warning(f"Generated dummy audio at {output_path}")
+    # Return the output path if successful, None otherwise
+    if success:
         return output_path
+    else:
+        logger.error("All speech generation methods failed")
+        return None
+
+def create_beep_sound(output_path, text=None, duration=3):
+    """Create a simple beep sound as an absolute last resort."""
+    try:
+        # Convert to .wav if the output is .mp3
+        wav_path = output_path
+        if output_path.lower().endswith(".mp3"):
+            wav_path = output_path.replace(".mp3", ".wav")
+        
+        # Create a simple beep sound
+        sample_rate = 44100
+        
+        # Calculate number of frames
+        n_frames = int(duration * sample_rate)
+        
+        # Create the audio data array
+        data = array.array('h')
+        
+        # Create a beep pattern based on text length if text is provided
+        if text:
+            # Create a unique pattern based on text to make it identifiable
+            pattern = []
+            text_hash = sum(ord(c) for c in text) % 100
+            
+            # Create a pattern of beeps
+            for i in range(min(10, len(text) // 5 + 1)):
+                freq = 440 + (text_hash + i * 50) % 400  # Frequency between 440-840 Hz
+                length = 0.2 + (ord(text[i * 5 % len(text)]) % 10) / 30  # Length between 0.2-0.5s
+                pattern.append((freq, length))
+        else:
+            # Default pattern if no text
+            pattern = [(440, 0.3), (0, 0.1), (660, 0.3), (0, 0.1), (880, 0.3)]
+        
+        # Generate the audio data
+        for freq, length in pattern:
+            frames = int(length * sample_rate)
+            
+            if freq > 0:
+                # Generate sine wave
+                for i in range(frames):
+                    value = int(32767 * math.sin(2 * math.pi * freq * i / sample_rate))
+                    data.append(value)
+            else:
+                # Silence
+                data.extend([0] * frames)
+        
+        # Write to a WAV file
+        with wave.open(wav_path, 'w') as f:
+            f.setnchannels(1)
+            f.setsampwidth(2)
+            f.setframerate(sample_rate)
+            f.writeframes(data.tobytes())
+        
+        logger.info(f"Created emergency audio signal: {wav_path}")
+        
+        # Return the WAV path
+        return wav_path
     except Exception as e:
-        logger.error(f"Error generating dummy audio: {e}")
-        # Create empty file
-        with open(output_path, 'wb') as f:
-            pass
-        return output_path 
+        logger.error(f"Failed to create emergency audio: {str(e)}")
+        return None
+
+def install_missing_packages():
+    """Install missing packages needed for TTS."""
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "gtts", "pyttsx3", "pydub"])
+        logger.info("Successfully installed required packages")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to install packages: {str(e)}")
+        return False
+
+# Test function
+if __name__ == "__main__":
+    # Configure logging for testing
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    
+    # Check if testing automatic package installation
+    if len(sys.argv) > 1 and sys.argv[1] == "--install":
+        print("Attempting to install required packages...")
+        if install_missing_packages():
+            print("Packages installed successfully")
+        else:
+            print("Failed to install packages. Please install manually:")
+            print("pip install gtts pyttsx3 pydub")
+        sys.exit(0)
+    
+    # Get text from command line arguments or use default
+    if len(sys.argv) > 1:
+        text = " ".join(sys.argv[1:])
+    else:
+        text = "Hello, this is a test of the speech synthesis system."
+    
+    print(f"Generating speech for: '{text}'")
+    output_path = generate_speech(text)
+    
+    if output_path:
+        print(f"Speech generated successfully: {output_path}")
+        
+        # Try to play the audio if possible
+        try:
+            if sys.platform == "win32":
+                os.system(f'start {output_path}')
+            elif sys.platform == "darwin":  # macOS
+                os.system(f'afplay {output_path}')
+            else:  # Linux
+                os.system(f'xdg-open {output_path}')
+        except Exception as e:
+            print(f"Could not play audio: {e}")
+    else:
+        print("Failed to generate speech")
